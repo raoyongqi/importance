@@ -43,12 +43,24 @@ const FeatureImportanceApp = () => {
                 text: 'Feature Importances',
             },
             tooltip: {},
+            grid: {
+                left: '10%',
+                right: '10%',
+                bottom: '10%',
+                containLabel: true,
+            },
             xAxis: {
-                type: 'category',
-                data: features,
+                type: 'value',
+                name: 'Importance',
             },
             yAxis: {
-                type: 'value',
+                type: 'category',
+                data: features,
+                name: 'Feature',
+                axisLabel: {
+                    interval: 0, // Ensure all labels are shown
+                    formatter: (value) => value, // Display full labels
+                },
             },
             series: [
                 {
@@ -57,6 +69,7 @@ const FeatureImportanceApp = () => {
                     itemStyle: {
                         color: '#c23531',
                     },
+                    barCategoryGap: '30%', // Controls the space between bars
                 },
             ],
         };
@@ -69,7 +82,7 @@ const FeatureImportanceApp = () => {
             {chartData.length > 0 && (
                 <ReactECharts
                     option={generateChartOptions()}
-                    style={{ height: '400px', width: '100%' }}
+                    style={{ height: '600px', width: '100%' }}
                 />
             )}
         </div>
