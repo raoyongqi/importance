@@ -1,37 +1,28 @@
 import React, { useState } from 'react';
-import * as XLSX from 'xlsx';
+import axios from 'axios';
 import ReactECharts from 'echarts-for-react';
 
 const FeatureImportanceApp = () => {
     const [chartData, setChartData] = useState([]);
 
-    const handleFileUpload = (event) => {
+    const handleFileUpload = async (event) => {
         const file = event.target.files[0];
-        const reader = new FileReader();
+        const formData = new FormData();
+        formData.append('file', file);
 
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+        try {
+            const response = await axios.post('http://localhost:8000/uploadfile/', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
 
             // Process the data into the format needed for the chart
-            const headers = worksheet[0];
-            const rows = worksheet.slice(1);
-            
-            const features = rows.map(row => row[0]);
-            const importances = rows.map(row => row[1]);
-
-            // Sort data by importance
-            const sortedData = features.map((feature, index) => ({
-                feature,
-                importance: importances[index]
-            })).sort((a, b) => b.importance - a.importance);
-
-            setChartData(sortedData);
-        };
-
-        reader.readAsArrayBuffer(file);
+            const data = response.data.data;
+            setChartData(data);
+        } catch (error) {
+            console.error("Error uploading file:", error);
+        }
     };
 
     const generateChartOptions = () => {
