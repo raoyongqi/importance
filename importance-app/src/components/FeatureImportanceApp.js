@@ -4,6 +4,8 @@ import ReactECharts from 'echarts-for-react';
 
 const FeatureImportanceApp = () => {
     const [chartData, setChartData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         // Fetch the data from the FastAPI server
@@ -12,14 +14,18 @@ const FeatureImportanceApp = () => {
                 const response = await axios.get('http://localhost:8000/readfile/');
                 const data = response.data.data;
                 setChartData(data);
-            } catch (error) {
-                console.error("Error fetching data:", error);
+                setLoading(false);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+                setError("Failed to load data");
+                setLoading(false);
             }
         };
 
         fetchData();
     }, []);
 
+    // Generate chart options
     const generateChartOptions = () => {
         const features = chartData.map(item => item.feature);
         const importances = chartData.map(item => item.importance);
@@ -44,8 +50,8 @@ const FeatureImportanceApp = () => {
                 data: features,
                 name: 'Feature',
                 axisLabel: {
-                    interval: 0, // Ensure all labels are shown
-                    formatter: (value) => value, // Display full labels
+                    interval: 0,
+                    formatter: (value) => value,
                 },
             },
             series: [
@@ -55,22 +61,31 @@ const FeatureImportanceApp = () => {
                     itemStyle: {
                         color: '#c23531',
                     },
-                    barCategoryGap: '30%', // Controls the space between bars
+                    barCategoryGap: '20%', // Adjusted space between bars
+                    barGap: '10%', // Space between bars in the same category
                 },
             ],
         };
     };
 
+    // Set height to be 10 times the base height (e.g., 600px)
+    const calculateChartHeight = () => {
+        const baseHeight = 600; // Base height in pixels
+        return `${baseHeight * 10}px`; // Height 10 times the base height
+    };
+
     return (
         <div>
             <h1>Feature Importances Chart</h1>
-            {chartData.length > 0 ? (
+            {loading ? (
+                <p>Loading data...</p>
+            ) : error ? (
+                <p>{error}</p>
+            ) : (
                 <ReactECharts
                     option={generateChartOptions()}
-                    style={{ height: '600px', width: '100%' }}
+                    style={{ height: calculateChartHeight(), width: '100%' }} // Set the chart height
                 />
-            ) : (
-                <p>Loading data...</p>
             )}
         </div>
     );
