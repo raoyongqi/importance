@@ -1,29 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ReactECharts from 'echarts-for-react';
 
 const FeatureImportanceApp = () => {
     const [chartData, setChartData] = useState([]);
 
-    const handleFileUpload = async (event) => {
-        const file = event.target.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
+    useEffect(() => {
+        // Fetch the data from the FastAPI server
+        const fetchData = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/readfile/');
+                const data = response.data.data;
+                setChartData(data);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
 
-        try {
-            const response = await axios.post('http://localhost:8000/uploadfile/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            // Process the data into the format needed for the chart
-            const data = response.data.data;
-            setChartData(data);
-        } catch (error) {
-            console.error("Error uploading file:", error);
-        }
-    };
+        fetchData();
+    }, []);
 
     const generateChartOptions = () => {
         const features = chartData.map(item => item.feature);
@@ -68,13 +63,14 @@ const FeatureImportanceApp = () => {
 
     return (
         <div>
-            <h1>Upload Excel to Plot Feature Importances</h1>
-            <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
-            {chartData.length > 0 && (
+            <h1>Feature Importances Chart</h1>
+            {chartData.length > 0 ? (
                 <ReactECharts
                     option={generateChartOptions()}
                     style={{ height: '600px', width: '100%' }}
                 />
+            ) : (
+                <p>Loading data...</p>
             )}
         </div>
     );
