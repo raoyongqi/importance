@@ -52,7 +52,12 @@ async def read_excel_file():
             importance_value = convert_to_float(row[1])
             
             # Determine category based on the prefix
-            category = "wc" if feature_name.startswith('wc') else "other"
+            if feature_name.lower() in ["lon", "lat"]:
+                category = "geo"
+            elif feature_name.startswith('wc'):
+                category = "clim"
+            else:
+                category = "soil"
 
             data.append({
                 "feature": feature_name,

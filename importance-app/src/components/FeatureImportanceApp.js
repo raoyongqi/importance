@@ -32,7 +32,7 @@ const FeatureImportanceApp = () => {
             d3.select('#chart').selectAll('*').remove();
 
             // Set up SVG and margins
-            const margin = { top: 20, right: 30, bottom: 40, left: 180 };
+            const margin = { top: 20, right: 120, bottom: 40, left: 180 };  // Increased right margin for larger legend
             const width = 960 - margin.left - margin.right;
             const height = topN * 30 + margin.top + margin.bottom;
 
@@ -81,25 +81,26 @@ const FeatureImportanceApp = () => {
                 .attr('height', y.bandwidth())
                 .attr('fill', d => colorScale(d.category));
 
-            // Add legend
+            // Add larger legend
             const legend = svg.append('g')
-                .attr('transform', `translate(${width + 20}, 0)`);  // Position legend to the right of the chart
+                .attr('transform', `translate(${width + 30}, 0)`);  // Position legend to the right of the chart
 
-            // Add one legend item per category
+            // Add one legend item per category with larger text
             colorScale.domain().forEach((category, i) => {
                 const legendRow = legend.append('g')
-                    .attr('transform', `translate(0, ${i * 20})`);  // 20px spacing between legend items
+                    .attr('transform', `translate(0, ${i * 45})`);  // 45px spacing between legend items for larger size
 
                 legendRow.append('rect')
-                    .attr('width', 18)
-                    .attr('height', 18)
+                .attr('width', 30)  // Larger legend box (20px * 1.5)
+                .attr('height', 30)
                     .attr('fill', colorScale(category));
 
                 legendRow.append('text')
-                    .attr('x', 24)
-                    .attr('y', 9)
+                    .attr('x', 50)  // Position text to the right of the legend box
+                    .attr('y', 15)  // Adjust y for centering with larger box
                     .attr('dy', '0.35em')
-                    .text(category);
+                    .text(category)
+                    .style('font-size', '21px');  // Larger font size
             });
         }
     }, [chartData, loading, error, topN]);
