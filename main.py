@@ -4,7 +4,7 @@ from openpyxl import load_workbook
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import math
-
+import re
 app = FastAPI()
 
 # CORS middleware configuration
@@ -48,7 +48,7 @@ async def read_excel_file():
     for row in sheet.iter_rows(values_only=True):
         if row[0] and row[1]:  # Skip rows with empty feature or importance
             data.append({
-                "feature": row[0],
+                "feature": re.sub('_resampled','',row[0]),
                 "importance": convert_to_float(row[1])  # Convert importance to float
             })
 
