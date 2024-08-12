@@ -6,7 +6,7 @@ const FeatureImportanceApp = () => {
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [topN, setTopN] = useState(10);  // New state to control how many top features to display
+    const [topN, setTopN] = useState(10);  // State to control how many top features to display
 
     useEffect(() => {
         // Fetch the data from the FastAPI server
@@ -56,6 +56,11 @@ const FeatureImportanceApp = () => {
                 .range([0, height - margin.top - margin.bottom])
                 .padding(0.1);
 
+            // Define color scale based on category
+            const colorScale = d3.scaleOrdinal()
+                .domain([...new Set(chartData.map(d => d.category))])
+                .range(d3.schemeCategory10);  // Using D3's category10 color scheme
+
             // Add X axis
             svg.append('g')
                 .attr('transform', `translate(0,${height - margin.top - margin.bottom})`)
@@ -65,7 +70,7 @@ const FeatureImportanceApp = () => {
             svg.append('g')
                 .call(d3.axisLeft(y));
 
-            // Add bars
+            // Add bars with color based on category
             svg.selectAll('rect')
                 .data(sortedData)
                 .enter()
@@ -74,7 +79,28 @@ const FeatureImportanceApp = () => {
                 .attr('y', d => y(d.feature))
                 .attr('width', d => x(d.importance))
                 .attr('height', y.bandwidth())
-                .attr('fill', '#c23531');
+                .attr('fill', d => colorScale(d.category));
+
+            // Add legend
+            const legend = svg.append('g')
+                .attr('transform', `translate(${width + 20}, 0)`);  // Position legend to the right of the chart
+
+            // Add one legend item per category
+            colorScale.domain().forEach((category, i) => {
+                const legendRow = legend.append('g')
+                    .attr('transform', `translate(0, ${i * 20})`);  // 20px spacing between legend items
+
+                legendRow.append('rect')
+                    .attr('width', 18)
+                    .attr('height', 18)
+                    .attr('fill', colorScale(category));
+
+                legendRow.append('text')
+                    .attr('x', 24)
+                    .attr('y', 9)
+                    .attr('dy', '0.35em')
+                    .text(category);
+            });
         }
     }, [chartData, loading, error, topN]);
 

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import math
 import re
+
 app = FastAPI()
 
 # CORS middleware configuration
@@ -47,9 +48,16 @@ async def read_excel_file():
     data = []
     for row in sheet.iter_rows(values_only=True):
         if row[0] and row[1]:  # Skip rows with empty feature or importance
+            feature_name = re.sub('_resampled', '', row[0])
+            importance_value = convert_to_float(row[1])
+            
+            # Determine category based on the prefix
+            category = "wc" if feature_name.startswith('wc') else "other"
+
             data.append({
-                "feature": re.sub('_resampled','',row[0]),
-                "importance": convert_to_float(row[1])  # Convert importance to float
+                "feature": feature_name,
+                "importance": importance_value,
+                "category": category
             })
 
     # Sort data by importance, putting None values at the end
